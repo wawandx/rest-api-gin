@@ -2,16 +2,17 @@ package routes
 
 import (
 	"os"
-	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"github.com/danilopolani/gocialite/structs"
 	"github.com/wawandx/rest-api-gin/config"
+	"github.com/wawandx/rest-api-gin/models"
 )
 
 // Redirect to correct oAuth URL
-func RedirectHandler(c *gin.Context) {
+func RedirectHandler(context *gin.Context) {
 	// Retrieve provider from route
-	provider := c.Param("provider")
+	provider := context.Param("provider")
 
 	providerSecrets := map[string]map[string]string{
 		"github": {
@@ -44,33 +45,53 @@ func RedirectHandler(c *gin.Context) {
 
 	// Check for errors (usually driver not valid)
 	if err != nil {
-		c.Writer.Write([]byte("Error: " + err.Error()))
+		context.Writer.Write([]byte("Error: " + err.Error()))
 		return
 	}
 
 	// Redirect with authURL
-	c.Redirect(http.StatusFound, authURL)
+	context.Redirect(http.StatusFound, authURL)
 }
 
 // Handle callback of provider
-func CallbackHandler(c *gin.Context) {
+func CallbackHandler(context *gin.Context) {
 	// Retrieve query params for state and code
-	state := c.Query("state")
-	code := c.Query("code")
-	provider := c.Param("provider")
+	state := context.Query("state")
+	code := context.Query("code")
+	provider := context.Param("provider")
 
 	// Handle callback and check for errors
 	user, token, err := config.Gocial.Handle(state, code)
 	if err != nil {
-		c.Writer.Write([]byte("Error: " + err.Error()))
+		context.Writer.Write([]byte("Error: " + err.Error()))
 		return
 	}
 
-	// Print in terminal user information
-	fmt.Printf("%#v", token)
-	fmt.Printf("%#v", user)
-	fmt.Printf("%#v", provider)
+	var newUser = getOrRegisterUser(provider, user)
 
-	// If no errors, show provider name
-	c.Writer.Write([]byte("Hi, " + user.FullName))
+	context.JSON(200, gin.H{
+		"data": newUser,
+		"token": token,
+		"message": "Succes login",
+	})
+}
+
+func getOrRegisterUser(provider string, user *structs.User) models.User{
+	var userData models.User
+
+	config.DB.Where("provider = ? AND social_id = ?", provider, user.ID).First(&userData)
+
+	if userData.ID == 0 {
+		newUser := models.User {
+			FullName : user.FullName,
+			Email    : user.Email,
+			SocialId : user.ID,
+			Provider : provider,
+			Avatar   : user.Avatar,
+		}
+		config.DB.Create(&newUser)
+		return newUser
+	} else {
+		return userData
+	}
 }
