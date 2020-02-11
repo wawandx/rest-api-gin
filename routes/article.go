@@ -37,8 +37,9 @@ func GetArticle(context *gin.Context) {
 func PostArticle(context *gin.Context) {
 	item := models.Article {
 		Title : context.PostForm("title"),
-		Desc : context.PostForm("desc"),
-		Slug : slug.Make(context.PostForm("title")),
+		Desc  : context.PostForm("desc"),
+		Slug  : slug.Make(context.PostForm("title")),
+		UserID: uint(context.MustGet("jwt_user_id").(float64)),
 	}
 
 	config.DB.Create(&item)
