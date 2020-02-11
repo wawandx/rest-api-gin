@@ -17,19 +17,27 @@ func checkJWT() gin.HandlerFunc {
 		authHeader := context.Request.Header.Get("Authorization")
 		bearerToken := strings.Split(authHeader, " ")
 
-		token, err := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
+		if len(bearerToken) == 2 {
+			token, err := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-						return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 				}
 	
 				// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 				return []byte(os.Getenv("JWT_SECRET")), nil
-		})
-	
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			})
+		
+			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 				fmt.Println(claims["user_id"], claims["user_role"])
+			} else {
+				context.JSON(422, gin.H{"message": "Invalid Token", "error": err})
+				context.Abort()
+				return
+			}
 		} else {
-				fmt.Println(err)
+			context.JSON(422, gin.H{"message": "Authorization token not provided"})
+			context.Abort()
+			return
 		}
 	}
 }
