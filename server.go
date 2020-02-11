@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/wawandx/rest-api-gin/config"
 	"github.com/wawandx/rest-api-gin/routes"
+	"github.com/wawandx/rest-api-gin/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/subosito/gotenv"
 )
@@ -18,6 +19,9 @@ func main() {
 	{
 		v1.GET("/auth/:provider", routes.RedirectHandler)
 		v1.GET("/auth/:provider/callback", routes.CallbackHandler)
+
+		//Testing Token
+		v1.GET("/check", middleware.IsAuth(), routes.CheckToken)
 
 		articles := v1.Group("/article")
 		{
