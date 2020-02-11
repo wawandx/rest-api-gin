@@ -12,6 +12,11 @@ import (
 	"github.com/wawandx/rest-api-gin/models"
 )
 
+//temporary check token
+func CheckToken(context *gin.Context) {
+	context.JSON(200, gin.H{"msg": "success login"})
+}
+
 // Redirect to correct oAuth URL
 func RedirectHandler(context *gin.Context) {
 	// Retrieve provider from route
