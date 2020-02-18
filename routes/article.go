@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"time"
+	"strconv"
 	"github.com/wawandx/rest-api-gin/config"
 	"github.com/wawandx/rest-api-gin/models"
 	"github.com/gin-gonic/gin"
@@ -35,11 +37,18 @@ func GetArticle(context *gin.Context) {
 }
 
 func PostArticle(context *gin.Context) {
+	var oldItem models.Article
+	slug := slug.Make(context.PostForm("title"))
+
+	if !config.DB.First(&oldItem, "slug = ?", slug).RecordNotFound() {
+		slug = slug + strconv.FormatInt(time.Now().Unix(), 10)
+	}
+
 	item := models.Article {
 		Title : context.PostForm("title"),
 		Desc  : context.PostForm("desc"),
 		Tag  : context.PostForm("tag"),
-		Slug  : slug.Make(context.PostForm("title")),
+		Slug  : slug,
 		UserID: uint(context.MustGet("jwt_user_id").(float64)),
 	}
 
