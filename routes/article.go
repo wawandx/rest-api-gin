@@ -70,3 +70,26 @@ func GetArticleByTag(context *gin.Context) {
 		"data": items,
 	})
 }
+
+func UpdateArticle(context *gin.Context) {
+	id := context.Param("id")
+
+	var item models.Article
+
+	if config.DB.First(&item, "id = ?", id).RecordNotFound() {
+		context.JSON(404, gin.H{"status": "error", "message": "record not found"})
+		context.Abort() //membatalkan semua fungsi yang akan d jalankan di bawah
+		return
+	}
+
+	config.DB.Model(&item).Where("id = ?", id).Updates(models.Article{
+		Title: context.PostForm("title"),
+		Desc: context.PostForm("desc"),
+		Tag: context.PostForm("tag"),
+	})
+
+	context.JSON(200, gin.H {
+		"status": "success",
+		"data": item,
+	})
+}
