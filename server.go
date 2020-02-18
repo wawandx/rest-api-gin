@@ -30,6 +30,7 @@ func main() {
 			articles.GET("/", routes.GetHome)
 			articles.POST("/", middleware.IsAuth(), routes.PostArticle)
 			articles.GET("/tag/:tag", routes.GetArticleByTag)
+			articles.PUT("/update/:id", middleware.IsAuth(), routes.UpdateArticle)
 		}
 	}
 
