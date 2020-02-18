@@ -82,6 +82,12 @@ func UpdateArticle(context *gin.Context) {
 		return
 	}
 
+	if uint(context.MustGet("jwt_user_id").(float64)) != item.UserID {
+		context.JSON(403, gin.H{"status": "error", "message": "this data is forbidden"})
+		context.Abort()
+		return
+	}
+
 	config.DB.Model(&item).Where("id = ?", id).Updates(models.Article{
 		Title: context.PostForm("title"),
 		Desc: context.PostForm("desc"),
