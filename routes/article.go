@@ -36,6 +36,18 @@ func GetArticle(context *gin.Context) {
 	})
 }
 
+func GetProfile(context *gin.Context) {
+	var user models.User
+	user_id := int(context.MustGet("jwt_user_id").(float64))
+
+	item := config.DB.Where("id = ?", user_id).Preload("Articles", "user_id = ?", user_id).Find(&user)
+
+	context.JSON(200, gin.H {
+		"status": "success",
+		"data": item,
+	})
+}
+
 func PostArticle(context *gin.Context) {
 	var oldItem models.Article
 	slug := slug.Make(context.PostForm("title"))
