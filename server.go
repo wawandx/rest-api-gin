@@ -20,8 +20,7 @@ func main() {
 		v1.GET("/auth/:provider", routes.RedirectHandler)
 		v1.GET("/auth/:provider/callback", routes.CallbackHandler)
 
-		//Testing Token
-		v1.GET("/check", middleware.IsAuth(), routes.CheckToken)
+		v1.GET("/profile", middleware.IsAuth(), routes.GetProfile)
 
 		v1.GET("/article/:slug", routes.GetArticle)
 
