@@ -30,6 +30,7 @@ func main() {
 			articles.POST("/", middleware.IsAuth(), routes.PostArticle)
 			articles.GET("/tag/:tag", routes.GetArticleByTag)
 			articles.PUT("/update/:id", middleware.IsAuth(), routes.UpdateArticle)
+			articles.DELETE("/delete/:id", middleware.IsAdmin(), routes.DeleteArticle)
 		}
 	}
 
